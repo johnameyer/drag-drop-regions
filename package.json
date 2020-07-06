@@ -1,0 +1,17 @@
+{
+  "name": "drag-drop-regions",
+  "version": "1.0.0",
+  "description": "A simple module creating containers and elements that allow for dragging and dropping and updating an underlying model.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "start": "tsc --watch",
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "url": "https://github.com/johnameyer/drag-drop-regions"
+  },
+  "author": "John Meyer",
+  "license": "ISC"
+}
