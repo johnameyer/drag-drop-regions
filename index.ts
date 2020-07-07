@@ -13,7 +13,7 @@ const button = function(str: string, func: () => any) {
     return button;
 }
 
-export const dragSegments = function<T, U extends HTMLElement>(containerProducer: () => HTMLDivElement, backing: T[][], transformer: (t: T) => U, submit: (t: T[][]) => any, limits?: number[], validators?: ((items: T[]) => boolean)[], fixed?: boolean[][]) {   
+export const dragSegments = function<T, U extends HTMLElement>(containerProducer: () => HTMLDivElement, backing: T[][], transformer: (t: T) => U, submit?: (t: T[][]) => any, limits?: number[], validators?: ((items: T[]) => boolean)[], fixed?: boolean[][]) {   
     type DragElement = U & { 'data-id': [number, number] };
 
     const container = div();
@@ -310,6 +310,8 @@ export const dragSegments = function<T, U extends HTMLElement>(containerProducer
             row[0].focus()
         }
     }, 0);
-    container.append(button('Submit', () => submit(backing)));
+    if(submit) {
+        container.append(button('Submit', () => submit(backing)));
+    }
     return container;
 }
