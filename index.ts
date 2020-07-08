@@ -152,6 +152,7 @@ export const dragSegments = function<T, U extends HTMLElement>(containerProducer
             } else {
                 element.draggable = true;
                 element.ondragstart = (ev) => {
+                    ev.preventDefault();
                     if(!ev.dataTransfer) return;
                     ev.dataTransfer.dropEffect = 'none';
                     selected = element['data-id'];
@@ -178,11 +179,12 @@ export const dragSegments = function<T, U extends HTMLElement>(containerProducer
                 }
 
                 element.ontouchmove = (ev) => {
-                    positionElement(element, ev.changedTouches[0]);
                     ev.preventDefault();
+                    positionElement(element, ev.changedTouches[0]);
                 }
 
                 element.ontouchcancel = (ev) => {
+                    ev.preventDefault();
                     resetPositioning(element);
                 }
             }
@@ -200,6 +202,7 @@ export const dragSegments = function<T, U extends HTMLElement>(containerProducer
             }
 
             element.onkeyup = (ev) => {
+                ev.preventDefault();
                 const [oldContainerIndex, oldChildIndex] = element['data-id'];
                 switch (ev.key) {
                     case 'ArrowLeft':
