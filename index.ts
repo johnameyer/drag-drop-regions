@@ -152,7 +152,6 @@ export const dragSegments = function<T, U extends HTMLElement>(containerProducer
             } else {
                 element.draggable = true;
                 element.ondragstart = (ev) => {
-                    ev.preventDefault();
                     if(!ev.dataTransfer) return;
                     ev.dataTransfer.dropEffect = 'none';
                     selected = element['data-id'];
