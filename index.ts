@@ -110,7 +110,7 @@ export const dragSegments = function<T, U extends HTMLElement>(containerProducer
         }
     }
 
-    const handleDrop = (droppedOn: Element, pageX: number, pageY: number) => {
+    const handleDrop = (droppedOn: Element, clientX: number, clientY: number) => {
         if(!selected) return;
         let newContainer: HTMLDivElement | undefined = undefined;
         let newContainerIndex = 0
@@ -132,8 +132,9 @@ export const dragSegments = function<T, U extends HTMLElement>(containerProducer
             // TODO rows vs columns and how to handle between rows
             for(let i = 0; i < elements[newContainerIndex].length; i++) {
                 const element = elements[newContainerIndex][i];
-                if(element.getBoundingClientRect().top <= pageY && pageY <= element.getBoundingClientRect().bottom){
-                    if(pageX < element.getBoundingClientRect().left + element.clientWidth/2) {
+                if(element.getBoundingClientRect().top <= clientY && clientY <= element.getBoundingClientRect().bottom){
+                    console.log();
+                    if(clientX < element.getBoundingClientRect().left + element.clientWidth/2) {
                         newChildIndex = i;
                         break;
                     }
@@ -145,7 +146,7 @@ export const dragSegments = function<T, U extends HTMLElement>(containerProducer
             if(newChildIndex == -1) {
                 newChildIndex = backing[oldContainerIndex].length - 1;
             } else {
-                const placedRightOf = pageX > elements[newContainerIndex][newChildIndex].getBoundingClientRect().left + elements[newContainerIndex][newChildIndex].clientWidth/2;
+                const placedRightOf = clientX > elements[newContainerIndex][newChildIndex].getBoundingClientRect().left + elements[newContainerIndex][newChildIndex].clientWidth/2;
                 if(placedRightOf) {
                     newChildIndex += 1;
                 }
@@ -156,7 +157,7 @@ export const dragSegments = function<T, U extends HTMLElement>(containerProducer
         } else {
             if(newChildIndex == -1) {
                 newChildIndex = backing[newContainerIndex].length;
-            } else if(pageX > elements[newContainerIndex][newChildIndex].getBoundingClientRect().left + elements[newContainerIndex][newChildIndex].clientWidth/2) {
+            } else if(clientX > elements[newContainerIndex][newChildIndex].getBoundingClientRect().left + elements[newContainerIndex][newChildIndex].clientWidth/2) {
                 newChildIndex += 1;
             }
         }
@@ -196,10 +197,10 @@ export const dragSegments = function<T, U extends HTMLElement>(containerProducer
                         }
                         resetPositioning(element);
                         removePlaceholderFor(element);
-                        const { pageX, pageY, clientX, clientY } = touch;
+                        const { clientX, clientY } = touch;
                         const droppedOn = document.elementFromPoint(clientX, clientY);
                         if(droppedOn) {
-                            handleDrop(droppedOn, pageX, pageY);
+                            handleDrop(droppedOn, clientX, clientY);
                         }
                         unselect(element);
                     }
@@ -317,7 +318,7 @@ export const dragSegments = function<T, U extends HTMLElement>(containerProducer
             if(!selected || !ev.dataTransfer) return;
             ev.dataTransfer.dropEffect = "move";
             if(!ev.target || !(ev.target instanceof Element)) return;
-            handleDrop(ev.target, ev.pageX, ev.pageY);
+            handleDrop(ev.target, ev.clientX, ev.clientY);
             // unselect(ev.target);
         }
         internalContainer.ondragover =  (ev) => {
