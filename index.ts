@@ -47,11 +47,11 @@ export const dragSegments = function<T, U extends HTMLElement>(containerProducer
         }
     }
 
-    const positionElement = (element: DragElement, {clientX, clientY}: {clientX: number, clientY: number}) => {
+    const positionElement = (element: DragElement, {pageX, pageY}: {pageX: number, pageY: number}) => {
         element.style.position = 'absolute';
         element.style.zIndex = '1000';
-        element.style.left = (clientX - element.clientWidth/2) + 'px';
-        element.style.top = (clientY - element.clientHeight/2) + 'px';
+        element.style.left = (pageX - element.clientWidth/2) + 'px';
+        element.style.top = (pageY - element.clientHeight/2) + 'px';
     }
     
     let resetPositioning: (element: DragElement) => any;
