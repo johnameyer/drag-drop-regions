@@ -1,6 +1,6 @@
 {
   "name": "drag-drop-regions",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "A simple module creating containers and elements that allow for dragging and dropping and updating an underlying model.",
   "main": "index.js",
   "types": "index.d.ts",
@@ -17,6 +17,7 @@
   "license": "ISC",
   "files": [
     "index.js",
-    "index.d.ts"
+    "index.d.ts",
+    "index.js.map"
   ]
 }

@@ -29,6 +29,8 @@ export const dragSegments = function<T, U extends HTMLElement>(containerProducer
     const elements: DragElement[][] = [];
     const internalContainers: HTMLDivElement[] = [];
 
+    let placeHolderElement = div();
+
     const select = (element: DragElement) => {
         element.focus();
         selected = element['data-id'];
@@ -38,6 +40,16 @@ export const dragSegments = function<T, U extends HTMLElement>(containerProducer
     const unselect = (element: DragElement) => {
         selected = undefined;
         element.classList.remove('selected');
+    }
+
+    const insertPlaceholderFor = (element: DragElement) => {
+        placeHolderElement.style.height = element.clientHeight + 'px';
+        placeHolderElement.style.width = element.clientWidth + 'px';
+        element.insertAdjacentElement('afterend', placeHolderElement);
+    }
+
+    const removePlaceholderFor = (element: DragElement) => {
+        placeHolderElement.remove();
     }
 
     const preserveStyle = (element: DragElement) => {
@@ -98,7 +110,7 @@ export const dragSegments = function<T, U extends HTMLElement>(containerProducer
         }
     }
 
-    const handleDrop = (droppedOn: Element, clientWidth: number, offsetX: number) => {
+    const handleDrop = (droppedOn: Element, pageX: number, pageY: number) => {
         if(!selected) return;
         let newContainer: HTMLDivElement | undefined = undefined;
         let newContainerIndex = 0
@@ -116,12 +128,25 @@ export const dragSegments = function<T, U extends HTMLElement>(containerProducer
         const oldContainer = internalContainers[oldContainerIndex];
 
         let newChildIndex: number = elements[newContainerIndex].findIndex(child => child.contains(droppedOn));
+        if(newChildIndex === -1) {
+            // TODO rows vs columns and how to handle between rows
+            for(let i = 0; i < elements[newContainerIndex].length; i++) {
+                const element = elements[newContainerIndex][i];
+                if(element.getBoundingClientRect().top <= pageY && pageY <= element.getBoundingClientRect().bottom){
+                    if(pageX < element.getBoundingClientRect().left + element.clientWidth/2) {
+                        newChildIndex = i;
+                        break;
+                    }
+                }
+            }
+        }
         // TODO left vs right side using offsetX and offsetY for children
         if(newContainer === oldContainer) {
             if(newChildIndex == -1) {
                 newChildIndex = backing[oldContainerIndex].length - 1;
             } else {
-                if(2 * offsetX > clientWidth) {
+                const placedRightOf = pageX > elements[newContainerIndex][newChildIndex].getBoundingClientRect().left + elements[newContainerIndex][newChildIndex].clientWidth/2;
+                if(placedRightOf) {
                     newChildIndex += 1;
                 }
                 if(newChildIndex > oldChildIndex) {
@@ -131,10 +156,12 @@ export const dragSegments = function<T, U extends HTMLElement>(containerProducer
         } else {
             if(newChildIndex == -1) {
                 newChildIndex = backing[newContainerIndex].length;
-            } else if(2 * offsetX > clientWidth) {
+            } else if(pageX > elements[newContainerIndex][newChildIndex].getBoundingClientRect().left + elements[newContainerIndex][newChildIndex].clientWidth/2) {
                 newChildIndex += 1;
             }
         }
+
+        removePlaceholderFor(elements[oldContainerIndex][oldChildIndex]);
 
         reorderElements(oldContainerIndex, oldChildIndex, newContainerIndex, newChildIndex);
     };
@@ -168,10 +195,11 @@ export const dragSegments = function<T, U extends HTMLElement>(containerProducer
                             return;
                         }
                         resetPositioning(element);
-                        const { clientX, clientY } = touch;
+                        removePlaceholderFor(element);
+                        const { pageX, pageY, clientX, clientY } = touch;
                         const droppedOn = document.elementFromPoint(clientX, clientY);
                         if(droppedOn) {
-                            handleDrop(droppedOn, droppedOn.clientWidth, clientX - droppedOn.getBoundingClientRect().x);
+                            handleDrop(droppedOn, pageX, pageY);
                         }
                         unselect(element);
                     }
@@ -179,12 +207,14 @@ export const dragSegments = function<T, U extends HTMLElement>(containerProducer
 
                 element.ontouchmove = (ev) => {
                     ev.preventDefault();
+                    insertPlaceholderFor(element);
                     positionElement(element, ev.changedTouches[0]);
                 }
 
                 element.ontouchcancel = (ev) => {
                     ev.preventDefault();
                     resetPositioning(element);
+                    removePlaceholderFor(element);
                 }
             }
 
@@ -287,7 +317,7 @@ export const dragSegments = function<T, U extends HTMLElement>(containerProducer
             if(!selected || !ev.dataTransfer) return;
             ev.dataTransfer.dropEffect = "move";
             if(!ev.target || !(ev.target instanceof Element)) return;
-            handleDrop(ev.target, ev.target.clientWidth, ev.offsetX);
+            handleDrop(ev.target, ev.pageX, ev.pageY);
             // unselect(ev.target);
         }
         internalContainer.ondragover =  (ev) => {
